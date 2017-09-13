@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <link rel="stylesheet" href="styles.css">
+    <!--Jquery-->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <!--Acorn-->
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/acorn/5.1.1/acorn.js'></script>
+    <!-- Load the Peer.js library -->
+    <script src="http://cdn.peerjs.com/0.3/peer.min.js"></script>
+    <!-- Load the Paper.js library -->
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/paper.js/0.11.4/paper-full.js"></script>
+    <!-- Load external PaperScript and associate it with myCanvas -->
+    <script type="text/paperscript" src="js/master.js" canvas="myCanvas"></script>
+    <script type="text/paperscript" src="js/graphics.js" canvas="myCanvas"></script>
+    <!--JS Logic-->
+    <script type="text/javascript" src="js/multiplayer.js"></script>
+</head>
+
+<body oncontextmenu="return false;">
+    <canvas id="myCanvas"></canvas>
+</body>
+
+</html>

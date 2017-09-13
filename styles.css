@@ -1,0 +1,14 @@
+body {
+	/*margin: 0px;*/
+	/*border:1px solid #000000;*/
+}
+
+#myCanvas {
+    padding: 0;
+    margin: auto;
+    display: block;
+	width: 1050px;
+	height: 640px;
+	border:1px solid #000000;
+	touch-action: none;
+}
