@@ -1,17 +1,11 @@
-var boardheight = 640;
-var boardwidth = 750;
-
 var radius = 50;
 var rheight = radius * 1.6;
 var flip = true;
-var width = 16;
-var height = 8;
 var enabledColor = "#d6d6d6";
 var disabledColor = "#666666";
 var red = new Color("#ff0000");
 var blue = new Color(74 / 255, 169 / 255, 247 / 255, 1);
 
-var startColor = red;
 
 var isTouch = function(event) {
     if (typeof event.event.touches != "undefined") {
@@ -23,7 +17,6 @@ var isTouch = function(event) {
 
 var rect = new Path.Rectangle({
     point: [0, 0],
-    // size: [view.size.width, view.size.height]
     size: [boardwidth, boardheight + 5]
 });
 rect.sendToBack();
@@ -44,7 +37,7 @@ rect.fillColor = "lightgrey";
         fillColor: "black",
         content: "MENU",
         fontSize: 16,
-        fontFamily: "Century Gothic",
+        fontFamily: "Century Gothic, CenturyGothic, AppleGothic, sans-serif",
         fontWeight: "bold"
     });
 
@@ -54,8 +47,8 @@ rect.fillColor = "lightgrey";
             size: [225, 75]
         }),
         radius: new Size(20, 20),
-        strokeColor: "black",
-        fillColor: disabledColor,
+        strokeColor: "grey",
+        fillColor: enabledColor,
         strokeWidth: 3,
         hoverable: false,
         touchDown: false
@@ -63,10 +56,10 @@ rect.fillColor = "lightgrey";
     var submitText = new PointText({
         point: [submitButton.position.x, submitButton.position.y + 10],
         justification: "center",
-        fillColor: "white",
+        fillColor: "grey",
         content: "SUBMIT TURN",
         fontSize: 25,
-        fontFamily: "Century Gothic",
+        fontFamily: "Century Gothic, CenturyGothic, AppleGothic, sans-serif",
         locked: true
             // fontWeight: "bold"
     });
@@ -77,11 +70,11 @@ rect.fillColor = "lightgrey";
     };
     submitButton.onMouseLeave = function(event) {
         if (submitButton.hoverable && !isTouch(event)) {
-            submitButton.fillColor += 0.1;
+            submitButton.fillColor = enabledColor;
         }
         if (isTouch(event) && submitButton.touchDown) {
             submitButton.touchDown = false;
-            submitButton.fillColor -= 0.15;
+            submitButton.fillColor = enabledColor;
         }
     };
     submitButton.onMouseDown = function(event) {
@@ -101,13 +94,12 @@ rect.fillColor = "lightgrey";
                     submitButton.touchDown = false;
                 }
             }
-            submitButton.fillColor -= 0.15;
-            console.log(master.selected.xIndex + "," + master.selected.yIndex);
-            master.processMove();
+            submitButton.fillColor = enabledColor;
+            processMove();
         }
     };
 
-    var turnMarker = new Path.Rectangle({
+    paper.turnMarker = new Path.Rectangle({
         rectangle: new Path.Rectangle({
             point: [850, 250],
             size: [74, 75]
@@ -116,132 +108,28 @@ rect.fillColor = "lightgrey";
         strokeColor: "black",
         strokeWidth: 3
     });
-    turnMarker.fillColor = startColor;
-    var menuGroup = new Group([menu, menuText, submitButton, submitText, turnMarker]);
+    paper.turnMarker.fillColor = turnColor;
+    var menuGroup = new Group([menu, menuText, submitButton, submitText, paper.turnMarker]);
 }
-var master = new Object();
-master.selected = "";
-master.triGrid;
-master.touchDown = "";
 
-master.getNodes = function(x, y) {
-    return master.triGrid[x][y];
-};
-master.select = function(x) {
+touchDown = "";
+
+paper.select = function(x) {
     if (x == "") {
-        submitText.fillColor = "white";
-        submitButton.fillColor = disabledColor;
+        submitText.fillColor = "grey";
+        submitButton.strokeColor = "grey";
+        submitButton.fillColor = enabledColor;
         submitButton.hoverable = false;
     } else {
         submitText.fillColor = "black";
+        submitButton.strokeColor = "black";
         submitButton.fillColor = enabledColor;
         submitButton.hoverable = true;
     }
-    master.selected = x;
+    paper.selected = x;
 };
 
-class TriNode {
-    constructor(x, y, flip, master, radius, xIndex, yIndex) {
-        this.marked = false;
-        this.neighbours = [];
-        this.team = "white";
-        this.radius = radius;
-        this.xIndex = xIndex;
-        this.yIndex = yIndex;
-        this.triangle = new Path.RegularPolygon({
-            center: new Point(x, y),
-            sides: 3,
-            radius: this.radius,
-            fillColor: this.team,
-            strokeColor: "black",
-            strokeWidth: 2
-        });
-        this.master = master;
-        this.flipped = flip;
-        if (this.flipped) {
-            this.triangle.rotation = 180;
-        }
-        this.selected = false;
-        this.x = x;
-        this.y = y;
-        this.triangle.node = this;
-        this.triangle.onMouseDown = function(event) {
-            if (isTouch(event)) {
-                this.node.master.touchDown = this;
-            }
-        }
-        this.triangle.onMouseUp = function(event) {
-            if ((isTouch(event) || event.event.button == 0) && this.contains(event.point)) {
-                if (isTouch(event) && (master.touchDown != this)) {
-                    return false;
-                }
-                if (!this.node.marked) {
-                    if (this.node.selected) {
-                        this.node.deselect();
-                    } else {
-                        this.node.select();
-                    }
-                }
-                if (isTouch(event))
-                    this.node.hoverLeave();
-            }
-        };
-        this.triangle.onMouseEnter = function(event) {
-            this.node.hoverEnter();
-
-        };
-        this.triangle.onMouseLeave = function(event) {
-            this.node.hoverLeave();
-
-        };
-    }
-    select() {
-        this.selected = true;
-        this.triangle.strokeWidth = 5;
-        if (master.selected != "") {
-            for (node of master.getNodes(master.selected.xIndex, master.selected.yIndex)) {
-                node.deselect();
-            }
-        }
-        master.select(this);
-        for (node of master.getNodes(master.selected.xIndex, master.selected.yIndex)) {
-            node.triangle.strokeWidth = 5;
-            node.selected = true;
-        }
-    }
-
-    deselect() {
-        this.selected = false;
-        this.triangle.strokeWidth = 2;
-        if (master.selected.xIndex == this.xIndex && master.selected.yIndex == this.yIndex) {
-            for (node of master.getNodes(master.selected.xIndex, master.selected.yIndex)) {
-                node.triangle.strokeWidth = 2;
-                node.selected = false;
-            }
-            master.select("");
-        }
-    }
-
-    hoverEnter() {
-        if (!this.marked) {
-            this.triangle.fillColor -= 0.25;
-        }
-    }
-
-    hoverLeave() {
-        if (!this.marked) {
-            this.triangle.fillColor += 0.25;
-        }
-    }
-}
 //init
-master.triGrid = new Array(width);
-for (var i = 0; i < width; i++) {
-    master.triGrid[i] = new Array(height);
-    for (var j = 0; j < height; j++) {
-        master.triGrid[i][j] = [];
-    }
-}
 
 var triList = [];
 
@@ -249,126 +137,128 @@ var triList = [];
 for (var j = 0; j < height; j++) {
     for (var i = 0; i < width; i++) {
         //center
-        var node = new TriNode(
+        var node = new TriNode(paper, i, j);
+        var gNode = new TriNodeG(
             radius * i,
             5 + rheight * j,
-            flip, master, radius, i, j);
-        master.triGrid[i][j].push(node);
-        triList.push(node);
+            flip, paper, radius, node);
+        paper.nodeGrid[i][j] = node;
+        paper.triGrid[i][j].push(gNode)
+        triList.push(gNode);
 
         //left
-        node = new TriNode(
+        gNode = new TriNodeG(
             radius * i - (radius * width),
             5 + rheight * j,
-            flip, master, radius, i, j);
-        master.triGrid[i][j].push(node);
-        triList.push(node);
+            flip, paper, radius, node);
+        paper.triGrid[i][j].push(gNode);
+        triList.push(gNode);
 
         //right
-        node = new TriNode(
+        gNode = new TriNodeG(
             radius * i + (radius * width),
             5 + rheight * j,
-            flip, master, radius, i, j);
-        master.triGrid[i][j].push(node);
-        triList.push(node);
+            flip, paper, radius, node);
+        paper.triGrid[i][j].push(gNode);
+        triList.push(gNode);
 
         //top
-        node = new TriNode(
+        gNode = new TriNodeG(
             radius * i,
             5 + rheight * j - (rheight * height),
-            flip, master, radius, i, j);
-        master.triGrid[i][j].push(node);
-        triList.push(node);
+            flip, paper, radius, node);
+        paper.triGrid[i][j].push(gNode);
+        triList.push(gNode);
 
         //top right
-        node = new TriNode(
+        gNode = new TriNodeG(
             radius * i + (radius * width),
             5 + rheight * j - (rheight * height),
-            flip, master, radius, i, j);
-        master.triGrid[i][j].push(node);
-        triList.push(node);
+            flip, paper, radius, node);
+        paper.triGrid[i][j].push(gNode);
+        triList.push(gNode);
 
         //top left
-        node = new TriNode(
+        gNode = new TriNodeG(
             radius * i - (radius * width),
             5 + rheight * j - (rheight * height),
-            flip, master, radius, i, j);
-        master.triGrid[i][j].push(node);
-        triList.push(node);
+            flip, paper, radius, node);
+        paper.triGrid[i][j].push(gNode);
+        triList.push(gNode);
 
         //bottom
-        node = new TriNode(
+        gNode = new TriNodeG(
             radius * i,
             5 + rheight * j + (rheight * height),
-            flip, master, radius, i, j);
-        master.triGrid[i][j].push(node);
-        triList.push(node);
+            flip, paper, radius, node);
+        paper.triGrid[i][j].push(gNode);
+        triList.push(gNode);
 
         //bottom right
-        node = new TriNode(
+        gNode = new TriNodeG(
             radius * i + (radius * width),
             5 + rheight * j + (rheight * height),
-            flip, master, radius, i, j);
-        master.triGrid[i][j].push(node);
-        triList.push(node);
+            flip, paper, radius, node);
+        paper.triGrid[i][j].push(gNode);
+        triList.push(gNode);
 
         //bottom left
-        node = new TriNode(
+        gNode = new TriNodeG(
             radius * i - (radius * width),
             5 + rheight * j + (rheight * height),
-            flip, master, radius, i, j);
-        master.triGrid[i][j].push(node);
-        triList.push(node);
+            flip, paper, radius, node);
+        paper.triGrid[i][j].push(gNode);
+        triList.push(gNode);
         if (j < 3) {
             //bottom x2
-            node = new TriNode(
+            gNode = new TriNodeG(
                 radius * i,
                 5 + rheight * j + 2 * (rheight * height),
-                flip, master, radius, i, j);
-            master.triGrid[i][j].push(node);
-            triList.push(node);
+                flip, paper, radius, node);
+            paper.triGrid[i][j].push(gNode);
+            triList.push(gNode);
 
             //bottom x2 right
-            node = new TriNode(
+            gNode = new TriNodeG(
                 radius * i + (radius * width),
                 5 + rheight * j + 2 * (rheight * height),
-                flip, master, radius, i, j);
-            master.triGrid[i][j].push(node);
-            triList.push(node);
+                flip, paper, radius, node);
+            paper.triGrid[i][j].push(gNode);
+            triList.push(gNode);
 
             //bottom x2 left
-            node = new TriNode(
+            gNode = new TriNodeG(
                 radius * i - (radius * width),
                 5 + rheight * j + 2 * (rheight * height),
-                flip, master, radius, i, j);
-            master.triGrid[i][j].push(node);
-            triList.push(node);
+                flip, paper, radius, node);
+            paper.triGrid[i][j].push(gNode);
+            triList.push(gNode);
         }
         if (i > width - 2) {
 
             //left x2
-            node = new TriNode(
+            gNode = new TriNodeG(
                 radius * i - 2 * (radius * width),
                 5 + rheight * j,
-                flip, master, radius, i, j);
-            master.triGrid[i][j].push(node);
-            triList.push(node);
+                flip, paper, radius, node);
+            paper.triGrid[i][j].push(gNode);
+            triList.push(gNode);
 
             //bottom left x2
-            node = new TriNode(
+            gNode = new TriNodeG(
                 radius * i - 2 * (radius * width),
                 5 + rheight * j + (rheight * height),
-                flip, master, radius, i, j);
-            master.triGrid[i][j].push(node);
-            triList.push(node);
+                flip, paper, radius, node);
+            paper.triGrid[i][j].push(gNode);
+            triList.push(gNode);
 
             //top left x2
-            node = new TriNode(
+            gNode = new TriNodeG(
                 radius * i - 2 * (radius * width),
                 5 + rheight * j - (rheight * height),
-                flip, master, radius, i, j);
-            master.triGrid[i][j].push(node);
-            triList.push(node);
+                flip, paper, radius, node);
+            paper.triGrid[i][j].push(gNode);
+            triList.push(gNode);
 
         }
 
@@ -456,8 +346,4 @@ view.onKeyDown = function(event) {
         event.delta = transform;
         view.onMouseDrag(event);
     }
-}
-
-master.processMove = new function() {
-    
 }
