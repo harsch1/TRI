@@ -1,13 +1,13 @@
 var radius = 50;
-var rheight = radius * 1.6;
+var rwidth = 50;
+var rheight = rwidth * 1.6;
 var flip = true;
-var enabledColor = "#d6d6d6";
-var disabledColor = "#666666";
+var keyScrollSpeed = 20;
 var red = new Color("#ff0000");
-var blue = new Color(74 / 255, 169 / 255, 247 / 255, 1);
+paper.blue = new Color(74 / 255, 169 / 255, 247 / 255, 1);
 
 
-var isTouch = function(event) {
+paper.isTouch = function(event) {
     if (typeof event.event.touches != "undefined") {
         return true;
     } else {
@@ -22,113 +22,6 @@ var rect = new Path.Rectangle({
 rect.sendToBack();
 rect.fillColor = "lightgrey";
 
-{ //Menu
-    var menu = new Path.Rectangle({
-        point: [750, -10],
-        size: [310, 660],
-        strokeColor: "black",
-        strokeWidth: 3
-    });
-    menu.fillColor = "white";
-
-    var menuText = new PointText({
-        point: [900, 50],
-        justification: "center",
-        fillColor: "black",
-        content: "MENU",
-        fontSize: 16,
-        fontFamily: "Century Gothic, CenturyGothic, AppleGothic, sans-serif",
-        fontWeight: "bold"
-    });
-
-    var submitButton = new Path.Rectangle({
-        rectangle: new Path.Rectangle({
-            point: [790, 550],
-            size: [225, 75]
-        }),
-        radius: new Size(20, 20),
-        strokeColor: "grey",
-        fillColor: enabledColor,
-        strokeWidth: 3,
-        hoverable: false,
-        touchDown: false
-    });
-    var submitText = new PointText({
-        point: [submitButton.position.x, submitButton.position.y + 10],
-        justification: "center",
-        fillColor: "grey",
-        content: "SUBMIT TURN",
-        fontSize: 25,
-        fontFamily: "Century Gothic, CenturyGothic, AppleGothic, sans-serif",
-        locked: true
-            // fontWeight: "bold"
-    });
-    submitButton.onMouseEnter = function(event) {
-        if (submitButton.hoverable && !isTouch(event)) {
-            submitButton.fillColor -= 0.1;
-        }
-    };
-    submitButton.onMouseLeave = function(event) {
-        if (submitButton.hoverable && !isTouch(event)) {
-            submitButton.fillColor = enabledColor;
-        }
-        if (isTouch(event) && submitButton.touchDown) {
-            submitButton.touchDown = false;
-            submitButton.fillColor = enabledColor;
-        }
-    };
-    submitButton.onMouseDown = function(event) {
-        if (submitButton.hoverable) {
-            submitButton.fillColor += 0.15;
-        }
-        if (isTouch(event)) {
-            submitButton.touchDown = true;
-        }
-    };
-    submitButton.onMouseUp = function(event) {
-        if (submitButton.hoverable) {
-            if (isTouch(event)) {
-                if (!submitButton.touchDown) {
-                    return;
-                } else {
-                    submitButton.touchDown = false;
-                }
-            }
-            submitButton.fillColor = enabledColor;
-            processMove();
-        }
-    };
-
-    paper.turnMarker = new Path.Rectangle({
-        rectangle: new Path.Rectangle({
-            point: [850, 250],
-            size: [74, 75]
-        }),
-        radius: new Size(20, 20),
-        strokeColor: "black",
-        strokeWidth: 3
-    });
-    paper.turnMarker.fillColor = turnColor;
-    var menuGroup = new Group([menu, menuText, submitButton, submitText, paper.turnMarker]);
-}
-
-touchDown = "";
-
-paper.select = function(x) {
-    if (x == "") {
-        submitText.fillColor = "grey";
-        submitButton.strokeColor = "grey";
-        submitButton.fillColor = enabledColor;
-        submitButton.hoverable = false;
-    } else {
-        submitText.fillColor = "black";
-        submitButton.strokeColor = "black";
-        submitButton.fillColor = enabledColor;
-        submitButton.hoverable = true;
-    }
-    paper.selected = x;
-};
-
 //init
 
 var triList = [];
@@ -139,7 +32,7 @@ for (var j = 0; j < height; j++) {
         //center
         var node = new TriNode(paper, i, j);
         var gNode = new TriNodeG(
-            radius * i,
+            rwidth * i,
             5 + rheight * j,
             flip, paper, radius, node);
         paper.nodeGrid[i][j] = node;
@@ -148,7 +41,7 @@ for (var j = 0; j < height; j++) {
 
         //left
         gNode = new TriNodeG(
-            radius * i - (radius * width),
+            rwidth * i - (rwidth * width),
             5 + rheight * j,
             flip, paper, radius, node);
         paper.triGrid[i][j].push(gNode);
@@ -156,7 +49,7 @@ for (var j = 0; j < height; j++) {
 
         //right
         gNode = new TriNodeG(
-            radius * i + (radius * width),
+            rwidth * i + (rwidth * width),
             5 + rheight * j,
             flip, paper, radius, node);
         paper.triGrid[i][j].push(gNode);
@@ -164,7 +57,7 @@ for (var j = 0; j < height; j++) {
 
         //top
         gNode = new TriNodeG(
-            radius * i,
+            rwidth * i,
             5 + rheight * j - (rheight * height),
             flip, paper, radius, node);
         paper.triGrid[i][j].push(gNode);
@@ -172,7 +65,7 @@ for (var j = 0; j < height; j++) {
 
         //top right
         gNode = new TriNodeG(
-            radius * i + (radius * width),
+            rwidth * i + (rwidth * width),
             5 + rheight * j - (rheight * height),
             flip, paper, radius, node);
         paper.triGrid[i][j].push(gNode);
@@ -180,7 +73,7 @@ for (var j = 0; j < height; j++) {
 
         //top left
         gNode = new TriNodeG(
-            radius * i - (radius * width),
+            rwidth * i - (rwidth * width),
             5 + rheight * j - (rheight * height),
             flip, paper, radius, node);
         paper.triGrid[i][j].push(gNode);
@@ -188,7 +81,7 @@ for (var j = 0; j < height; j++) {
 
         //bottom
         gNode = new TriNodeG(
-            radius * i,
+            rwidth * i,
             5 + rheight * j + (rheight * height),
             flip, paper, radius, node);
         paper.triGrid[i][j].push(gNode);
@@ -196,7 +89,7 @@ for (var j = 0; j < height; j++) {
 
         //bottom right
         gNode = new TriNodeG(
-            radius * i + (radius * width),
+            rwidth * i + (rwidth * width),
             5 + rheight * j + (rheight * height),
             flip, paper, radius, node);
         paper.triGrid[i][j].push(gNode);
@@ -204,7 +97,7 @@ for (var j = 0; j < height; j++) {
 
         //bottom left
         gNode = new TriNodeG(
-            radius * i - (radius * width),
+            rwidth * i - (rwidth * width),
             5 + rheight * j + (rheight * height),
             flip, paper, radius, node);
         paper.triGrid[i][j].push(gNode);
@@ -212,7 +105,7 @@ for (var j = 0; j < height; j++) {
         if (j < 3) {
             //bottom x2
             gNode = new TriNodeG(
-                radius * i,
+                rwidth * i,
                 5 + rheight * j + 2 * (rheight * height),
                 flip, paper, radius, node);
             paper.triGrid[i][j].push(gNode);
@@ -220,7 +113,7 @@ for (var j = 0; j < height; j++) {
 
             //bottom x2 right
             gNode = new TriNodeG(
-                radius * i + (radius * width),
+                rwidth * i + (rwidth * width),
                 5 + rheight * j + 2 * (rheight * height),
                 flip, paper, radius, node);
             paper.triGrid[i][j].push(gNode);
@@ -228,7 +121,7 @@ for (var j = 0; j < height; j++) {
 
             //bottom x2 left
             gNode = new TriNodeG(
-                radius * i - (radius * width),
+                rwidth * i - (rwidth * width),
                 5 + rheight * j + 2 * (rheight * height),
                 flip, paper, radius, node);
             paper.triGrid[i][j].push(gNode);
@@ -238,7 +131,7 @@ for (var j = 0; j < height; j++) {
 
             //left x2
             gNode = new TriNodeG(
-                radius * i - 2 * (radius * width),
+                rwidth * i - 2 * (rwidth * width),
                 5 + rheight * j,
                 flip, paper, radius, node);
             paper.triGrid[i][j].push(gNode);
@@ -246,7 +139,7 @@ for (var j = 0; j < height; j++) {
 
             //bottom left x2
             gNode = new TriNodeG(
-                radius * i - 2 * (radius * width),
+                rwidth * i - 2 * (rwidth * width),
                 5 + rheight * j + (rheight * height),
                 flip, paper, radius, node);
             paper.triGrid[i][j].push(gNode);
@@ -254,7 +147,7 @@ for (var j = 0; j < height; j++) {
 
             //top left x2
             gNode = new TriNodeG(
-                radius * i - 2 * (radius * width),
+                rwidth * i - 2 * (rwidth * width),
                 5 + rheight * j - (rheight * height),
                 flip, paper, radius, node);
             paper.triGrid[i][j].push(gNode);
@@ -267,7 +160,7 @@ for (var j = 0; j < height; j++) {
     }
     flip = !flip;
 }
-menuGroup.bringToFront();
+paper.menuGroup.bringToFront();
 var startCorner = view.bounds.point;
 
 view.onMouseDown = function(event) {
@@ -284,10 +177,10 @@ view.onMouseUp = function(event) {
 }
 view.onMouseDrag = function(event) {
     var dragScale = 2.2;
-    if (view.dragging || (isTouch(event) && event.event.touches.length == 2)) {
+    if (view.dragging || (paper.isTouch(event) && event.event.touches.length == 2)) {
         view.center += event.delta / dragScale;
         rect.position += event.delta / dragScale;
-        menuGroup.position += event.delta / dragScale;
+        paper.menuGroup.position += event.delta / dragScale;
         //too far right
         if (startCorner.x - view.bounds.point.x > radius * width) {
             var correction = radius * width;
@@ -332,16 +225,16 @@ view.onKeyDown = function(event) {
         if (!view.dragging) view.dragging = true;
         var transform = new Point(0, 0);
         if (event.key == "w") {
-            transform = new Point(0, -10);
+            transform = new Point(0, -1*keyScrollSpeed);
         }
         if (event.key == "s") {
-            transform = new Point(0, 10);
+            transform = new Point(0, keyScrollSpeed);
         }
         if (event.key == "a") {
-            transform = new Point(-10, 0);
+            transform = new Point(-1*keyScrollSpeed, 0);
         }
         if (event.key == "d") {
-            transform = new Point(10, 0);
+            transform = new Point(keyScrollSpeed, 0);
         }
         event.delta = transform;
         view.onMouseDrag(event);
