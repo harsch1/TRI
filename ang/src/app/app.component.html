@@ -1,3 +1,15 @@
-<h1>
-  {{title}}
-</h1>
+<div id="wrapper">
+  <div id="content" [ngStyle]="{'background-color': currentColor}">
+    Test
+    <canvas #myCanvas class="canvas"  oncontextmenu="return false;">
+    </canvas>
+  </div>
+  <div id="button" [ngStyle]="{'background-color': currentColor}">
+    <button type="button"
+            class="btn btn-light submit"
+            (click)="buttonClicked()"
+            [disabled]="!triSelected">
+    <b>SUBMIT</b>
+  </button>
+</div>
+</div>
